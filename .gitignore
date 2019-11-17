@@ -1,0 +1,9 @@
+.vs
+virtual
+start.ps1
+start.sh
+start.bat
+*.pyc
+db.sqlite3
+migrations/
+.vscode
