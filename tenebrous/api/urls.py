@@ -8,5 +8,6 @@ router.register(r'users', views.UserViewSet)
 
 urlpatterns = [
   path('', include(router.urls)),
-  path('auth/', views.ObtainAuthTokenAndUserDetails.as_view())
+  path('auth/', views.ObtainAuthTokenAndUserDetails.as_view()),
+  path('udft/', views.UserView.as_view())
 ]

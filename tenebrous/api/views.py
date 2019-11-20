@@ -7,6 +7,9 @@ from rest_framework.response import Response
 from django.forms.models import model_to_dict
 from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.generics import RetrieveAPIView
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 class UserViewSet(viewsets.ModelViewSet):
   queryset = User.objects.all()
@@ -40,5 +43,22 @@ class ObtainAuthTokenAndUserDetails(ObtainAuthToken):
         'id': user.id,
         'username': user.username,
         'email': user.email
+      }
+    })
+
+class UserView(RetrieveAPIView):
+  queryset = User.objects.all()
+  model = User
+  serializer_class = UserSerializer
+  authentication_classes = (TokenAuthentication,)
+  permission_classes = (IsAuthenticated,)
+
+  def retrieve(self, request):
+    print(request.user.id)
+    return Response({
+      'user': {
+        'id': request.user.id,
+        'username': request.user.username,
+        'email': request.user.email
       }
     })
