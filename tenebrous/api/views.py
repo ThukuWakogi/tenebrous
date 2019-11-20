@@ -6,6 +6,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.forms.models import model_to_dict
 from rest_framework import status
+from rest_framework.authtoken.views import ObtainAuthToken
 
 class UserViewSet(viewsets.ModelViewSet):
   queryset = User.objects.all()
@@ -26,3 +27,18 @@ class UserViewSet(viewsets.ModelViewSet):
       status=status.HTTP_201_CREATED,
       headers=headers
     )
+
+class ObtainAuthTokenAndUserDetails(ObtainAuthToken):
+  def post(self, request, *args, **kwargs):
+    response = super(ObtainAuthTokenAndUserDetails, self).post(request, *args, **kwargs)
+    token = Token.objects.get(key=response.data['token'])
+    user = User.objects.get(id=token.user_id)
+
+    return Response({
+      'token': token.key,
+      'user': {
+        'id': user.id,
+        'username': user.username,
+        'email': user.email
+      }
+    })
