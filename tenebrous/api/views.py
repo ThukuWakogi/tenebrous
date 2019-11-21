@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import viewsets
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ImageSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.forms.models import model_to_dict
@@ -9,7 +9,8 @@ from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from .models import Image
 
 class UserViewSet(viewsets.ModelViewSet):
   queryset = User.objects.all()
@@ -62,3 +63,15 @@ class UserView(RetrieveAPIView):
         'email': request.user.email
       }
     })
+
+class ImageViewSet(viewsets.ModelViewSet):
+  queryset = Image.objects.all()
+  serializer_class = ImageSerializer
+  authentication_classes = (TokenAuthentication,)
+  permission_classes = (IsAuthenticatedOrReadOnly,)
+
+  def list(self, request, *args, **kwargs):
+    images = Image.objects.all()
+    serializer = ImageSerializer(images, many=True)
+    
+    return Response(serializer.data)
