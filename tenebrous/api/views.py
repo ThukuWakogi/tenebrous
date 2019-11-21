@@ -1,11 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from .serializers import UserSerializer, ImageSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from django.forms.models import model_to_dict
-from rest_framework import status
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.authentication import TokenAuthentication
@@ -71,7 +70,36 @@ class ImageViewSet(viewsets.ModelViewSet):
   permission_classes = (IsAuthenticatedOrReadOnly,)
 
   def list(self, request, *args, **kwargs):
-    images = Image.objects.all()
+    images = Image.objects.all().order_by('-id')
     serializer = ImageSerializer(images, many=True)
-    
-    return Response(serializer.data)
+    images_and_users = []
+
+    for pod in serializer.data:
+      user = User.objects.get(id=dict(pod)['user'])
+      images_and_users.append({
+        'id': dict(pod)['id'],
+        'caption': dict(pod)['caption'],
+        'imageUrl': dict(pod)['image'],
+        'user': {
+          'id': user.id,
+          'username': user.username,
+          'email': user.email
+        }
+      })
+
+    print(images_and_users)
+
+    return Response(images_and_users)
+
+  def create(self, request, *args, **kwargs):
+    request.data.update({ 'user': request.user.id })
+    serializer = ImageSerializer(data=request.data)
+    print(request.data)
+
+    if serializer.is_valid():
+      serializer.save()
+
+      return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+      return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
