@@ -2,13 +2,12 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class Profile(models.Model):
-  image = models.ImageField(upload_to='images/')
-  bio = models.TextField()
+  image = models.ImageField(upload_to='images/', default='images/default.jpg')
+  bio = models.TextField(blank=True)
   user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Image(models.Model):
   image = models.ImageField(upload_to='images/')
-  name = models.CharField(max_length=500)
   caption = models.CharField(max_length=500)
   user = models.ForeignKey(User, on_delete=models.CASCADE)
 
